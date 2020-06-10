@@ -171,6 +171,12 @@ func InstallAndValidateCiliumUpgrades(kubectl *helpers.Kubectl, oldHelmChartVers
 		if helpers.RunsWithoutKubeProxy() {
 			opts["global.nodePort.device"] = privateIface
 		}
+		// Cilium < v1.8 has kube-proxy-replacement=strict mode broken.
+		// See also notes in GH-#12018 issue.
+		if helpers.RunsOn419Kernel() {
+			opts["global.kubeProxyReplacement"] = "partial"
+			opts["global.hostServices.enabled"] = "true"
+		}
 		if registry != "" {
 			opts["global.registry"] = registry
 		}
@@ -247,6 +253,10 @@ func InstallAndValidateCiliumUpgrades(kubectl *helpers.Kubectl, oldHelmChartVers
 		}
 		if helpers.RunsWithoutKubeProxy() {
 			opts["global.nodePort.device"] = privateIface
+		}
+		if helpers.RunsOn419Kernel() {
+			opts["global.kubeProxyReplacement"] = "partial"
+			opts["global.hostServices.enabled"] = "true"
 		}
 
 		// Eventually allows multiple return values, and performs the assertion
@@ -406,6 +416,10 @@ func InstallAndValidateCiliumUpgrades(kubectl *helpers.Kubectl, oldHelmChartVers
 		}
 		if helpers.RunsWithoutKubeProxy() {
 			opts["global.nodePort.device"] = privateIface
+		}
+		if helpers.RunsOn419Kernel() {
+			opts["global.kubeProxyReplacement"] = "partial"
+			opts["global.hostServices.enabled"] = "true"
 		}
 
 		EventuallyWithOffset(1, func() (*helpers.CmdRes, error) {
